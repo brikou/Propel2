@@ -16,7 +16,7 @@ class AnnotationBuilder
     public static function getFieldMappingColumnAnnotation(array $fieldMapping)
     {
         $column = array();
-        if (isset($fieldMapping['columnName'])) {
+        if (false) if (isset($fieldMapping['columnName'])) {
             $column[] = 'name="' . $fieldMapping['columnName'] . '"';
         }
 
