@@ -40,7 +40,7 @@ $generator = new Generator();
 foreach ($cmf->getAllMetadata() as $metadata) {
 
     /* @var $metadata Doctrine\ORM\Mapping\ClassMetadataInfo */
-
+//var_dump($metadata->table['name']);
     /* identifiers are put on top of fieldMappings */
     $identifiers = array();
     $positions   = array();
