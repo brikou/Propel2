@@ -4,7 +4,7 @@
     /**
      * Get the {{ metadata.table['name'] }}'s {{ fieldMapping.fieldName }}
      * 
-     * @return {{ fieldMapping.type }}
+     * @return {{ fieldMapping.type }} The {{ metadata.table['name'] }}'s {{ fieldMapping.fieldName }}
      */
     public function get{{ fieldMapping.fieldName|ucfirst }}()
     {
@@ -14,7 +14,7 @@
     /**
      * Set the {{ metadata.table['name'] }}'s {{ fieldMapping.fieldName }}
      * 
-     * @param {{ fieldMapping.type }} ${{ fieldMapping.fieldName }}
+     * @param {{ fieldMapping.type }} ${{ fieldMapping.fieldName }} The {{ metadata.table['name'] }}'s {{ fieldMapping.fieldName }}
      */
     public function set{{ fieldMapping.fieldName|ucfirst }}(${{ fieldMapping.fieldName }})
     {
@@ -27,9 +27,9 @@
 {% for key, associationMapping in metadata.associationMappings %}
 {% set associationDetail = associationDetails[key] %}
     /**
-     * Get the {{ metadata.table['name'] }}'s {{ associationMapping.fieldName }}
+     * Get {{ associationDetail.targetEntityDescription }}
      * 
-     * @return {{ associationDetail.targetEntity }} {{ associationDetail.targetEntityDescription }}
+     * @return {{ associationDetail.targetEntity }} {{ associationDetail.targetEntityDescription|ucfirst }}
      */
     public function get{{ associationMapping.fieldName|ucfirst }}()
     {
@@ -37,9 +37,9 @@
     }
 
     /**
-     * Set the {{ metadata.table['name'] }}'s {{ associationMapping.fieldName }} entity
+     * Set {{ associationDetail.targetEntityDescription }}
      * 
-     * @param {{ associationDetail.targetEntity }} ${{ associationMapping.fieldName }} {{ associationDetail.targetEntityDescription }}
+     * @param {{ associationDetail.targetEntity }} ${{ associationMapping.fieldName }} {{ associationDetail.targetEntityDescription|ucfirst }}
      */
     public function set{{ associationMapping.fieldName|ucfirst }}(${{ associationMapping.fieldName }})
     {
@@ -49,7 +49,7 @@
 {% if not associationDetail.isToOne %}
 {% set singularFieldName = associationMapping.fieldName|makeSingular %}
     /**
-     * Add a {{ associationMapping.fieldName|makeSingular }} to the {{ metadata.table['name'] }}'s {{ associationMapping.fieldName }}
+     * Add a {{ associationMapping.fieldName|makeSingular }} to the {{ metadata.table['name'] }}'s related {{ associationMapping.fieldName }}
      * 
      * @param {{ associationMapping.targetEntity }} ${{ singularFieldName }}
      */
@@ -59,7 +59,7 @@
     }
 
     /**
-     * Remove a {{ associationMapping.fieldName|makeSingular }} to the {{ metadata.table['name'] }}'s {{ associationMapping.fieldName }}
+     * Remove a {{ associationMapping.fieldName|makeSingular }} to the {{ metadata.table['name'] }}'s related {{ associationMapping.fieldName }}
      * 
      * @param {{ associationMapping.targetEntity }} ${{ singularFieldName }}
      */

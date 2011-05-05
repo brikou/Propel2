@@ -140,11 +140,16 @@ class BaseActiveRecord extends ORMBuilder
             if (self::isToOneAssociation($associationMapping['type'])) {
                 $associationDetail['isToOne'] = true;
                 $associationDetail['targetEntity'] = '\\' .  $associationMapping['targetEntity'];
-                $associationDetail['targetEntityDescription'] = 'The related entity';
+                // $targetEntityDescription = 'The related entity';
+                $targetEntityDescription = sprintf("the %s's related %s", $this->metadata->table['name'], $associationMapping['fieldName']);
+                $associationDetail['targetEntityDescription'] = $targetEntityDescription;
+
             } else {
                 $associationDetail['isToOne'] = false;
                 $associationDetail['targetEntity'] = '\\Doctrine\\Common\\Collections\\ArrayCollection';
-                $associationDetail['targetEntityDescription'] = 'The collection of related entities';
+                // $targetEntityDescription = 'The collection of related entities';
+                $targetEntityDescription = sprintf("the collection of %s's %s", $this->metadata->table['name'], $associationMapping['fieldName']);
+                $associationDetail['targetEntityDescription'] = $targetEntityDescription;
             }
             if (isset($associationMapping['fetch'])) {
                 $associationDetail['fetch'] = self::getConstantName($associationMapping['fetch'], $fetchTypes);
