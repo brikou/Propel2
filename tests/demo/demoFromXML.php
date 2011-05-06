@@ -1,4 +1,4 @@
-#!/usr/bin/env php
+#!/usr/bin/php
 <?php
 
 /*
@@ -67,6 +67,14 @@ foreach ($cmf->getAllMetadata() as $metadata) {
     $generator->addBuilder($builder);
     if (false)$generator->addBuilder(new ActiveRecord($metadata));
 }
-echo "Generating classes for xml schemas...\n";
-$generator->writeClasses(__DIR__ . '/Model');
-echo "Class generation complete\n";
+
+if (true) {
+    foreach ($generator->getBuilders() as $i => $builder) {
+        echo $builder->getCode();
+        break;
+    }
+} else {
+    echo "Generating classes for xml schemas...\n";
+    $generator->writeClasses(__DIR__ . '/Model');
+    echo "Class generation complete\n";
+}
