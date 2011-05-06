@@ -23,7 +23,7 @@ $config = new Configuration();
 $config->setMetadataCacheImpl(new \Doctrine\Common\Cache\ArrayCache);
 
 $driverImpl = new XmlDriver($dir);
-$driverImpl->setFileExtension('.orm.dcm.xml');
+$driverImpl->setFileExtension('.orm.xml');
 $config->setMetadataDriverImpl($driverImpl);
 
 $config->setProxyDir(__DIR__ . '/Proxies');
