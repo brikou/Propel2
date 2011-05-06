@@ -9,6 +9,7 @@ echo shell_exec(' php /var/www/' . $project . '/app/console doctrine:mapping:con
 */
 
 $dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine/';
+$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine/';
 
 require_once __DIR__ . '/../../autoload.php';
 
@@ -40,7 +41,7 @@ $generator = new Generator();
 foreach ($cmf->getAllMetadata() as $metadata) {
 
     /* @var $metadata Doctrine\ORM\Mapping\ClassMetadataInfo */
-//var_dump($metadata->table['name']);
+
     /* identifiers are put on top of fieldMappings */
     $identifiers = array();
     $positions   = array();
