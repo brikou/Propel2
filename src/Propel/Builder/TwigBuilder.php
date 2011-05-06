@@ -208,7 +208,6 @@ class TwigBuilder
      */
     static public function makeSingular($name)
     {
-        return rtrim($name, 's');
+        return Inflect::singularize($name);
     }
-
 }
