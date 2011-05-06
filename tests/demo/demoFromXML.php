@@ -11,6 +11,8 @@ echo shell_exec(' php /var/www/' . $project . '/app/console doctrine:mapping:con
 $dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine/';
 $dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine/';
 
+$outputDirectory = __DIR__ . '/Model';
+
 require_once __DIR__ . '/../../autoload.php';
 
 use Propel\Builder\ORM\BaseActiveRecord;
@@ -42,7 +44,7 @@ foreach ($cmf->getAllMetadata() as $metadata) {
 
     /* @var $metadata Doctrine\ORM\Mapping\ClassMetadataInfo */
 
-    /* identifiers are put on top of fieldMappings */
+    // identifiers are put on top of fieldMappings
     $identifiers = array();
     $positions   = array();
 
@@ -68,13 +70,43 @@ foreach ($cmf->getAllMetadata() as $metadata) {
     if (false)$generator->addBuilder(new ActiveRecord($metadata));
 }
 
-if (true) {
-    foreach ($generator->getBuilders() as $i => $builder) {
-        echo $builder->getCode();
-        break;
+echo "Generating classes for xml schemas...\n";
+$generator->writeClasses($outputDirectory);
+echo "Class generation complete\n";
+
+// somme cleanup
+
+foreach ($generator->getBuilders() as $i => $builder) {
+
+    $code = $builder->getCode();
+
+    // unneeded stuff deletion
+    preg_match_all('%^    /\*\*(.*?)\*/.*?\{.*?^    \}\r?\n%sm', $code, $matches, PREG_PATTERN_ORDER);
+
+    for ($i = 0; $i < count($matches[0]); $i++) {
+
+        $fragment = $matches[0][$i];
+
+        if (strpos($fragment, 'public function ') !== false) {
+            foreach (array(
+                'fromArray',
+                'toArray',
+                'setByName',
+                'getByName',
+            ) as $function) {
+                if (strpos($fragment, $function) !== false) {
+                    $code = str_replace($fragment, '', $code);
+                    //var_dump($fragment);
+                }
+            }
+        }
+
     }
-} else {
-    echo "Generating classes for xml schemas...\n";
-    $generator->writeClasses(__DIR__ . '/Model');
-    echo "Class generation complete\n";
+
+    //var_dump($code);
+    
+    $path = $outputDirectory . DIRECTORY_SEPARATOR . $builder->getOutputName();
+    file_put_contents($path, $code);
+
+    //break;
 }
