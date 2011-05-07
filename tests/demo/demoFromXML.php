@@ -76,13 +76,9 @@ echo "Generating classes for xml schemas...\n";
 $generator->writeClasses($outputDirectory);
 echo "Class generation complete\n";
 
-// somme cleanup
+// some cleanup
 
-if (!false) foreach ($generator->getBuilders() as $i => $builder) {
-
-if ($i < 1) {
-    continue;
-}
+foreach ($generator->getBuilders() as $i => $builder) {
 
     // fetching position of columns
 
@@ -108,15 +104,9 @@ if ($i < 1) {
         }
     }
 
-    //$positions = array_flip($columns);
-    //print_r($columns);
-    //print_r($positions);
-
-    //exit();
-
     $code = $builder->getCode();
 
-    $fragments = array();
+    $methods = array();
 
     preg_match_all('%^    /\*\*(.*?)\*/.*?^    (?:protected \$[a-zA-Z0-9_]+;|\})\r?\n\r?\n%sm', $code, $matchesA, PREG_PATTERN_ORDER);
 
@@ -128,18 +118,21 @@ if ($i < 1) {
 
             $columns[$matchesB[1]]['property'] = $fragment;
 
-        } else {
-            if (preg_match('/public function (set|add|remove)[^By][a-zA-Z0-9]+\(\$([a-z_0-9]+)\)/', $fragment, $matchesB)) {
+        } elseif (preg_match('/public function (set|add|remove)[^By][a-zA-Z0-9]+\(\$([a-z_0-9]+)\)/', $fragment, $matchesB)) {
 
-                $columns[$matchesB[2]][$matchesB[1]] = $fragment;
-            }
+            $columns[$matchesB[2]][$matchesB[1]] = $fragment;
 
-            if (preg_match('/public function (get)[^By][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
+        } elseif (preg_match('/public function (get)[^By][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
 
-                $columns[$matchesB[2]][$matchesB[1]] = $fragment;
-            }
+            $columns[$matchesB[2]][$matchesB[1]] = $fragment;
+
+        } elseif (preg_match('/public function (.*?)\(/', $fragment, $matchesB)) {
+
+            $methods[$matchesB[1]] = $fragment;
         }
     }
+
+    ob_start();
 
     if (true) foreach ($columns as $column => $fragments) {
         if (array_key_exists($type = 'property', $fragments)) {
@@ -147,8 +140,12 @@ if ($i < 1) {
         }
     }
 
+    if (array_key_exists($name = '__construct', $methods)) {
+        echo $methods[$name];
+    }
+
     if (true) foreach ($columns as $column => $fragments) {
-        foreach (array('set', 'add', 'remove', 'get') as $type) {
+        foreach (array('get', 'set', 'add', 'remove') as $type) {
 
             if ($type === 'set' && $column === 'id') {
                 continue;
@@ -160,56 +157,18 @@ if ($i < 1) {
         }
     }
 
-    exit();
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    // unneeded stuff deletion
-    preg_match_all('%^    /\*\*(.*?)\*/.*?\{.*?^    \}\r?\n\r?\n%sm', $code, $matches, PREG_PATTERN_ORDER);
-
-    for ($i = 0; $i < count($matches[0]); $i++) {
-
-        $fragment = $matches[0][$i];
-
-        if (strpos($fragment, 'public function ') !== false) {
-            foreach (array(
-                'fromArray',
-                'toArray',
-                'setByName',
-                'getByName',
-            ) as $function) {
-                if (strpos($fragment, $function) !== false) {
-                    $code = str_replace($fragment, '', $code);
-                    //var_dump($fragment);
-                }
-            }
+    if (false) foreach (array('setByName', 'getByName', 'fromArray', 'toArray') as $name) {
+        if (array_key_exists($name, $methods)) {
+            echo $methods[$name];
         }
     }
+
+    $code = preg_replace('/^\{(.*?)^\}/sm', '{' . PHP_EOL . rtrim(ob_get_clean()) . PHP_EOL . '}', $code);
 
     // removed namespace declarations
     $code = str_replace('\Base;' . PHP_EOL . PHP_EOL . 'use Propel\ActiveEntity;', ';', $code);
     $code = str_replace(' extends ActiveEntity', '', $code);
-
-    // removed the last empty line
-    $code = str_replace('    }' . PHP_EOL . PHP_EOL . '}', '    }' . PHP_EOL . '}', $code);
-    //var_dump($code);
     
     $path = $outputDirectory . DIRECTORY_SEPARATOR . $builder->getOutputName();
     file_put_contents($path, $code);
-
-    //break;
 }
