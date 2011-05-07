@@ -47,7 +47,7 @@ foreach ($cmf->getAllMetadata() as $metadata) {
     $builder->setMappingDriver(BaseActiveRecord::MAPPING_STATIC_PHP | BaseActiveRecord::MAPPING_ANNOTATION);
     $builder->setAnnotationPrefix('orm');
     $generator->addBuilder($builder);
-    $generator->addBuilder(new ActiveRecord($metadata));
+    if (false) $generator->addBuilder(new ActiveRecord($metadata));
 }
 
 echo "Generating classes for xml schemas...\n";
@@ -56,7 +56,7 @@ echo "Class generation complete\n";
 
 // some cleanup
 
-if (!true) foreach ($generator->getBuilders() as $i => $builder) {
+if (true) foreach ($generator->getBuilders() as $i => $builder) {
 
     // fetching position of columns
 
