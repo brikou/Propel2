@@ -8,8 +8,8 @@ $dir     = __DIR__ . '/Model/xml/' . $project;
 echo shell_exec(' php /var/www/' . $project . '/app/console doctrine:mapping:convert --force xml ' . $dir);
 */
 
-//$dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine';
-$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine';
+$dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine';
+//$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine';
 
 $outputDirectory = __DIR__ . '/Model';
 
@@ -44,7 +44,7 @@ foreach ($cmf->getAllMetadata() as $metadata) {
 
     /* @var $metadata Doctrine\ORM\Mapping\ClassMetadataInfo */
 
-    if (false) {
+    /*
         // identifiers are put on top of fieldMappings
         $identifiers = array();
         $positions   = array();
@@ -61,8 +61,8 @@ foreach ($cmf->getAllMetadata() as $metadata) {
             $positions, SORT_ASC, SORT_NUMERIC,
             $metadata->fieldMappings
         );
-    }
-    
+    */
+
     $builder = new BaseActiveRecord($metadata);
 
     $builder->setMappingDriver(BaseActiveRecord::MAPPING_ANNOTATION);
@@ -80,10 +80,10 @@ echo "Class generation complete\n";
 
 if (!false) foreach ($generator->getBuilders() as $i => $builder) {
 
-if ($i < 0) {
+if ($i < 1) {
     continue;
 }
-    
+
     // fetching position of columns
 
     $xml_filename = $dir . '/' . str_replace(array('/Base', '/', '.php'), array('', '.', $driverImpl->getFileExtension()), $builder->getOutputName());
@@ -96,16 +96,22 @@ if ($i < 0) {
 
     $columns = array();
 
-    foreach($xml->xpath('//orm:entity/orm:*[@name]') as $node) {
+    foreach($xml->xpath('//orm:entity/orm:*[@name or @field]') as $node) {
+
         /* @var $node \SimpleXMLElement */
         $attributes = $node->attributes();
-        $columns[(string) $attributes['name']] = array();
+
+        foreach (array('name', 'field') as $type) {
+            if (isset($attributes[$type])) {
+                $columns[(string) $attributes[$type]] = array();
+            }
+        }
     }
 
     //$positions = array_flip($columns);
     //print_r($columns);
     //print_r($positions);
-    
+
     //exit();
 
     $code = $builder->getCode();
@@ -123,14 +129,14 @@ if ($i < 0) {
             $columns[$matchesB[1]]['property'] = $fragment;
 
         } else {
-            if (preg_match('/public function set[^By][a-zA-Z0-9]+\(\$([a-z_0-9]+)\)/', $fragment, $matchesB)) {
+            if (preg_match('/public function (set|add|remove)[^By][a-zA-Z0-9]+\(\$([a-z_0-9]+)\)/', $fragment, $matchesB)) {
 
-                $columns[$matchesB[1]]['setter'] = $fragment;
+                $columns[$matchesB[2]][$matchesB[1]] = $fragment;
             }
-            
-            if (preg_match('/public function get[^By][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
 
-                $columns[$matchesB[1]]['getter'] = $fragment;
+            if (preg_match('/public function (get)[^By][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
+
+                $columns[$matchesB[2]][$matchesB[1]] = $fragment;
             }
         }
     }
@@ -141,8 +147,13 @@ if ($i < 0) {
         }
     }
 
-    if (!true) foreach ($columns as $column => $fragments) {
-        foreach (array('setter', 'getter') as $type) {
+    if (true) foreach ($columns as $column => $fragments) {
+        foreach (array('set', 'add', 'remove', 'get') as $type) {
+
+            if ($type === 'set' && $column === 'id') {
+                continue;
+            }
+
             if (array_key_exists($type, $fragments)) {
                 echo $fragments[$type];
             }
@@ -151,6 +162,7 @@ if ($i < 0) {
 
     exit();
 
+
     
     
     
@@ -162,6 +174,8 @@ if ($i < 0) {
     
     
     
+    
+
     
     
     // unneeded stuff deletion
