@@ -41,35 +41,13 @@ $cmf->setEntityManager(\Doctrine\ORM\EntityManager::create(array(
 $generator = new Generator();
 
 foreach ($cmf->getAllMetadata() as $metadata) {
-
     /* @var $metadata Doctrine\ORM\Mapping\ClassMetadataInfo */
 
-    /*
-        // identifiers are put on top of fieldMappings
-        $identifiers = array();
-        $positions   = array();
-
-        $i = 0;
-        foreach ($metadata->fieldMappings as $fieldMapping) {
-            $positions[]   = $i;
-            $identifiers[] = isset($fieldMapping['id']) ? 1 : 0;
-            $i++;
-        }
-
-        array_multisort(
-            $identifiers, SORT_DESC, SORT_NUMERIC,
-            $positions, SORT_ASC, SORT_NUMERIC,
-            $metadata->fieldMappings
-        );
-    */
-
     $builder = new BaseActiveRecord($metadata);
-
-    $builder->setMappingDriver(BaseActiveRecord::MAPPING_ANNOTATION);
+    $builder->setMappingDriver(BaseActiveRecord::MAPPING_STATIC_PHP | BaseActiveRecord::MAPPING_ANNOTATION);
     $builder->setAnnotationPrefix('orm');
-
     $generator->addBuilder($builder);
-    if (false)$generator->addBuilder(new ActiveRecord($metadata));
+    $generator->addBuilder(new ActiveRecord($metadata));
 }
 
 echo "Generating classes for xml schemas...\n";
@@ -78,7 +56,7 @@ echo "Class generation complete\n";
 
 // some cleanup
 
-foreach ($generator->getBuilders() as $i => $builder) {
+if (!true) foreach ($generator->getBuilders() as $i => $builder) {
 
     // fetching position of columns
 
@@ -157,7 +135,7 @@ foreach ($generator->getBuilders() as $i => $builder) {
         }
     }
 
-    if (false) foreach (array('setByName', 'getByName', 'fromArray', 'toArray') as $name) {
+    if (false) foreach (array('setByName', 'getByName', 'fromArray', 'toArray', 'loadMetadata') as $name) {
         if (array_key_exists($name, $methods)) {
             echo $methods[$name];
         }
@@ -166,7 +144,7 @@ foreach ($generator->getBuilders() as $i => $builder) {
     $code = preg_replace('/^\{(.*?)^\}/sm', '{' . PHP_EOL . rtrim(ob_get_clean()) . PHP_EOL . '}', $code);
 
     // removed namespace declarations
-    $code = str_replace('\Base;' . PHP_EOL . PHP_EOL . 'use Propel\ActiveEntity;', ';', $code);
+    $code = preg_replace('/\\\\Base;.*?use Propel\\\\ActiveEntity;/s', ';', $code);
     $code = str_replace(' extends ActiveEntity', '', $code);
     
     $path = $outputDirectory . DIRECTORY_SEPARATOR . $builder->getOutputName();
