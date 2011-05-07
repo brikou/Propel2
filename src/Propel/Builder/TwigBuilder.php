@@ -13,9 +13,9 @@ class TwigBuilder
         'ucfirst',
         '\Doctrine\Common\Util\Inflector::classify',
         'substr',
-        '\Propel\Builder\TwigBuilder::exportArray',
-        '\Propel\Builder\TwigBuilder::typeToPhp',
+        '\Propel\Util\ArrayType::stringify',
         '\Propel\Util\Inflector::singularize',
+        '\Propel\Builder\TwigBuilder::typeToPhp',
     );
     protected $variables = array();
     protected $tempDir;
