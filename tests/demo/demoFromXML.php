@@ -8,8 +8,8 @@ $dir     = __DIR__ . '/Model/xml/' . $project;
 echo shell_exec(' php /var/www/' . $project . '/app/console doctrine:mapping:convert --force xml ' . $dir);
 */
 
-$dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine';
-//$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine';
+//$dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine';
+$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine';
 
 $outputDirectory = __DIR__ . '/Model';
 
@@ -98,7 +98,13 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
 
         } elseif (preg_match('/public function (set|add|remove)[^By][a-zA-Z0-9]+\(\$([a-z_0-9]+)\)/', $fragment, $matchesB)) {
 
-            $columns[$matchesB[2]][$matchesB[1]] = $fragment;
+            $column = $matchesB[2];
+
+            if (in_array($matchesB[1], array('add', 'remove'))) {
+                $column = \Propel\Util\Inflector::pluralize($column);
+            }
+
+            $columns[$column][$matchesB[1]] = $fragment;
 
         } elseif (preg_match('/public function (get)[^By][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
 
@@ -123,13 +129,16 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
     }
 
     if (true) foreach ($columns as $column => $fragments) {
-        foreach (array('get', 'set', 'add', 'remove') as $type) {
+      //foreach (array('get', 'set', 'add', 'remove') as $type) {
+        foreach (array('set', 'get', 'add', 'remove') as $type) {
 
             if ($type === 'set' && $column === 'id') {
                 continue;
             }
 
             if (array_key_exists($type, $fragments)) {
+//print_r(array($column, $type));
+
                 echo $fragments[$type];
             }
         }
