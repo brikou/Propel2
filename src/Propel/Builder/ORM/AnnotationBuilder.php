@@ -33,7 +33,7 @@ class AnnotationBuilder
         ) as $key) {
 
             if (isset($fieldMapping[$key])) {
-                $column[] = sprintf('%s="%s"', $key, $fieldMapping[$key]);
+                $column[] = sprintf('%s=%s', $key, var_export($fieldMapping[$key], true));
             }
         }
 
