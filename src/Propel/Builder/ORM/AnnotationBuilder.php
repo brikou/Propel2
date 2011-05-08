@@ -15,46 +15,37 @@ class AnnotationBuilder
     
     public static function getFieldMappingColumnAnnotation(array $fieldMapping)
     {
-        $column = array();
-        if (isset($fieldMapping['columnName'])) {
+        $column = array(); // could be renamed to options to be consistent
+
+        // it should be also passed in foreach loop, but we have to know all default options
+        if (isset($fieldMapping['columnName']) && ($fieldMapping['columnName'] != $fieldMapping['fieldName'])) {
             $column[] = 'name="' . $fieldMapping['columnName'] . '"';
         }
 
-        if (isset($fieldMapping['type'])) {
-            $column[] = 'type="' . $fieldMapping['type'] . '"';
+        foreach (array(
+            'type',
+            'length',
+            'precision',
+            'scale',
+            'nullable',
+            'columnDefinition',
+            'unique',
+        ) as $key) {
+
+            if (isset($fieldMapping[$key])) {
+                $column[] = sprintf('%s=%s', $key, var_export($fieldMapping[$key], true));
+            }
         }
 
-        if (isset($fieldMapping['length'])) {
-            $column[] = 'length=' . $fieldMapping['length'];
-        }
-
-        if (isset($fieldMapping['precision'])) {
-            $column[] = 'precision=' .  $fieldMapping['precision'];
-        }
-
-        if (isset($fieldMapping['scale'])) {
-            $column[] = 'scale=' . $fieldMapping['scale'];
-        }
-
-        if (isset($fieldMapping['nullable'])) {
-            $column[] = 'nullable=' .  var_export($fieldMapping['nullable'], true);
-        }
-
-        if (isset($fieldMapping['columnDefinition'])) {
-            $column[] = 'columnDefinition="' . $fieldMapping['columnDefinition'] . '"';
-        }
-
-        if (isset($fieldMapping['unique'])) {
-            $column[] = 'unique=' . var_export($fieldMapping['unique'], true);
-        }
-
-        return 'Column(' . implode(', ', $column) . ')';
+        return sprintf('Column(%s)', implode(', ', $column));
     }
     
     
     public function getSequenceGeneratorAnnotation()
     {
-        $sequenceGenerator = array();
+        $sequenceGenerator = array(); // could be renamed to options to be consistent
+
+        // we could add a loop here too
 
         if (isset($this->metadata->sequenceGeneratorDefinition['sequenceName'])) {
             $sequenceGenerator[] = 'sequenceName="' . $this->metadata->sequenceGeneratorDefinition['sequenceName'] . '"';
@@ -75,6 +66,9 @@ class AnnotationBuilder
     {
         $discrColumn = $this->metadata->discriminatorColumn;
         $discrColumnDetails = array();
+
+        // we could add a loop here too
+
         if (isset($discrColumn['name'])) {
             $discrColumnDetails[] = 'name="' . $discrColumn['name'] . '"';
         }
@@ -116,7 +110,45 @@ class AnnotationBuilder
     
     public function getAssociationMappingAnnotation(array $associationMapping)
     {
+        $typeOptions = array(); // could be renamed to options to be consistent
+
+        foreach (array(
+            'targetEntity',
+            'inversedBy',
+            'mappedBy',
+        ) as $key) {
+
+            if (isset($associationMapping[$key])) {
+                $typeOptions[] = sprintf('%s="%s"', $key, $associationMapping[$key]);
+            }
+        }
+
+        if ($associationMapping['cascade']) {
+
+            $cascades = array();
+
+            foreach (array(
+                'persist',
+                'remove',
+                'detach',
+                'merge',
+                'refresh',
+            ) as $key) {
+
+                if ($associationMapping[sprintf('isCascade%s', ucfirst($key))]) {
+                    $cascades[] = sprintf('"%s"', $key);
+                }
+            }
+
+            $typeOptions[] = sprintf('cascade={%s}', implode(', ', $cascades));
+        }
+
+        if (isset($associationMapping['orphanRemoval']) && $associationMapping['orphanRemoval']) {
+            $typeOptions[] = 'orphanRemoval=' . ($associationMapping['orphanRemoval'] ? 'true' : 'false');
+        }
+
         $type = null;
+
         switch ($associationMapping['type']) {
             case ClassMetadataInfo::ONE_TO_ONE:
                 $type = 'OneToOne';
@@ -131,77 +163,38 @@ class AnnotationBuilder
                 $type = 'ManyToMany';
                 break;
         }
-        $typeOptions = array();
-
-        if (isset($associationMapping['targetEntity'])) {
-            $typeOptions[] = 'targetEntity="' . $associationMapping['targetEntity'] . '"';
-        }
-
-        if (isset($associationMapping['inversedBy'])) {
-            $typeOptions[] = 'inversedBy="' . $associationMapping['inversedBy'] . '"';
-        }
-
-        if (isset($associationMapping['mappedBy'])) {
-            $typeOptions[] = 'mappedBy="' . $associationMapping['mappedBy'] . '"';
-        }
-
-        if ($associationMapping['cascade']) {
-            $cascades = array();
-
-            if ($associationMapping['isCascadePersist']) $cascades[] = '"persist"';
-            if ($associationMapping['isCascadeRemove']) $cascades[] = '"remove"';
-            if ($associationMapping['isCascadeDetach']) $cascades[] = '"detach"';
-            if ($associationMapping['isCascadeMerge']) $cascades[] = '"merge"';
-            if ($associationMapping['isCascadeRefresh']) $cascades[] = '"refresh"';
-
-            $typeOptions[] = 'cascade={' . implode(',', $cascades) . '}';            
-        }
-
-        if (isset($associationMapping['orphanRemoval']) && $associationMapping['orphanRemoval']) {
-            $typeOptions[] = 'orphanRemoval=' . ($associationMapping['orphanRemoval'] ? 'true' : 'false');
-        }
 
         return $type . '(' . implode(', ', $typeOptions) . ')';
    }
    
    public function getJoinColumnAnnotation($joinColumn)
    {
-        $joinColumnAnnot = array();
+        $joinColumnAnnot = array(); // could be renamed to options to be consistent
 
-        if (isset($joinColumn['name'])) {
-            $joinColumnAnnot[] = 'name="' . $joinColumn['name'] . '"';
+        foreach (array(
+            'name',
+            'referencedColumnName',
+            'unique',
+            'nullable',
+            'onDelete',
+            'onUpdate',
+            'columnDefinition',
+        ) as $key) {
+
+            if (isset($joinColumn[$key])) {
+                $joinColumnAnnot[] = sprintf('%s="%s"', $key, $joinColumn[$key]);
+            }
         }
 
-        if (isset($joinColumn['referencedColumnName'])) {
-            $joinColumnAnnot[] = 'referencedColumnName="' . $joinColumn['referencedColumnName'] . '"';
-        }
-
-        if (isset($joinColumn['unique']) && $joinColumn['unique']) {
-            $joinColumnAnnot[] = 'unique=' . ($joinColumn['unique'] ? 'true' : 'false');
-        }
-
-        if (isset($joinColumn['nullable'])) {
-            $joinColumnAnnot[] = 'nullable=' . ($joinColumn['nullable'] ? 'true' : 'false');
-        }
-
-        if (isset($joinColumn['onDelete'])) {
-            $joinColumnAnnot[] = 'onDelete=' . ($joinColumn['onDelete'] ? 'true' : 'false');
-        }
-
-        if (isset($joinColumn['onUpdate'])) {
-            $joinColumnAnnot[] = 'onUpdate=' . ($joinColumn['onUpdate'] ? 'true' : 'false');
-        }
-
-        if (isset($joinColumn['columnDefinition'])) {
-            $joinColumnAnnot[] = 'columnDefinition="' . $joinColumn['columnDefinition'] . '"';
-        }
-
-        return 'JoinColumn(' . implode(', ', $joinColumnAnnot) . ')';
+        return 'JoinColumn(' . implode(', ', $joinColumnAnnot) . ')'; // sprintf
    }
 
    public function getJoinTableAnnotation($joinTable)
    {
-        $joinTableAnnot = array();
+        $joinTableAnnot = array();  // could be renamed to options to be consistent
+
+        // we could add a loop here too
+
         $joinTableAnnot[] = 'name="' . $joinTable['name'] . '"';
 
         if (isset($joinTable['schema'])) {
