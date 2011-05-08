@@ -8,8 +8,8 @@ $dir     = __DIR__ . '/Model/xml/' . $project;
 echo shell_exec(' php /var/www/' . $project . '/app/console doctrine:mapping:convert --force xml ' . $dir);
 */
 
-//$dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine';
-$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine';
+$dir = '/var/www/AcmePizza/src/Acme/PizzaBundle/Resources/config/doctrine';
+//$dir = '/var/www/RdfIntranet2/src/Rdf/AgendaBundle/Resources/config/doctrine';
 
 $outputDirectory = __DIR__ . '/Model';
 
@@ -188,7 +188,15 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
         }
     }
 
-    if (false) foreach (array('setByName', 'getByName', 'fromArray', 'toArray', 'loadMetadata') as $name) {
+    if (true) foreach (array(
+        /*
+        'setByName',
+        'getByName',
+        'fromArray',
+        'toArray',
+        */
+        'loadMetadata',
+    ) as $name) {
         if (array_key_exists($name, $methods)) {
             $code_cleaned.= $methods[$name];
         }

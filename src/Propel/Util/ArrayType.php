@@ -56,11 +56,17 @@ class ArrayType
         }
 
         if ($count > 1) {
-            return sprintf('array('. PHP_EOL . '%s'. PHP_EOL . '%s)', implode(PHP_EOL, $lines), str_repeat(' ', $indentation - 4));
+            $string = sprintf('array('. PHP_EOL . '%s'. PHP_EOL . '%s)', implode(PHP_EOL, $lines), str_repeat(' ', $indentation - 4));
         } else if ($count === 1) {
-            return sprintf('array(%s)', $lines[0]);
+            $string = sprintf('array(%s)', $lines[0]);
         } else {
-            return 'array()';
+            $string = 'array()';
         }
+
+        $string = preg_replace_callback('/\'``(.*?)``\'/m', function($matches) {
+            return stripslashes($matches[1]);
+        }, $string);
+
+        return $string;
     }
 }
