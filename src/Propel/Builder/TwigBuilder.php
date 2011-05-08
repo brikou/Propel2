@@ -106,11 +106,12 @@ class TwigBuilder
             'autoescape'       => false,
             'strict_variables' => true,
             'debug'            => true,
-            'cache'            => $this->tempDir,
+            //'cache'            => $this->tempDir,
         ));
         $this->addTwigFilters($twig);
         $template = $twig->loadTemplate($this->getTemplateName());
         $variables = array_merge($this->getVariables(), $variables);
+
         return $template->render($variables);
     }
 
