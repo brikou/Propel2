@@ -191,7 +191,7 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
     if (true) foreach (array(
         //'setByName',
         //'getByName',
-        //'fromArray',
+        'fromArray',
         'toArray',
         //'loadMetadata',
     ) as $name) {
