@@ -54,19 +54,25 @@ echo "Generating classes for xml schemas...\n";
 $generator->writeClasses($outputDirectory);
 echo "Class generation complete\n";
 
-// some cleanup
+/**
+ * some customization
+ */
 
 if (true) foreach ($generator->getBuilders() as $i => $builder) {
 
-    // fetching position of columns
+    if (false) if ($i < 1) {
+        continue;
+    }
+
+    /**
+     * fetching position of columns
+     */
 
     $xml_filename = $dir . '/' . str_replace(array('/Base', '/', '.php'), array('', '.', $driverImpl->getFileExtension()), $builder->getOutputName());
     $xml = file_get_contents($xml_filename);
 
     $xml = new SimpleXMLElement(file_get_contents($xml_filename));
     $xml->registerXPathNamespace('orm', 'http://doctrine-project.org/schemas/orm/doctrine-mapping');
-
-    //var_dump($xml->asXML());
 
     $columns = array();
 
@@ -82,6 +88,10 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
         }
     }
 
+    /**
+     * feeding columns with fragments of code (ordered by type fe: set/get/add/remove/property)
+     */
+
     $code = $builder->getCode();
 
     $methods = array();
@@ -96,7 +106,7 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
 
             $columns[$matchesB[1]]['property'] = $fragment;
 
-        } elseif (preg_match('/public function (set|add|remove)[^By][a-zA-Z0-9]+\(\$([a-z_0-9]+)\)/', $fragment, $matchesB)) {
+        } elseif (preg_match('/public function (set|add|remove)[A-Z][a-zA-Z0-9]+\(\$([a-zA-Z0-9_]+)\)/', $fragment, $matchesB)) {
 
             $column = $matchesB[2];
 
@@ -106,7 +116,7 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
 
             $columns[$column][$matchesB[1]] = $fragment;
 
-        } elseif (preg_match('/public function (get)[^By][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
+        } elseif (preg_match('/public function (get)[A-Z][a-zA-Z0-9]+\(\).*?return \$this->(.*?);/s', $fragment, $matchesB)) {
 
             $columns[$matchesB[2]][$matchesB[1]] = $fragment;
 
@@ -116,46 +126,82 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
         }
     }
 
-    ob_start();
+    /**
+     * adding type hint casting
+     */
+    if (true) {
 
+        /*
+        if (preg_match('/namespace (.*?)\\\\Base;/', $code, $matches)) {
+            $namespace = '\\' . $matches[1];
+        }
+        var_dump($namespace);
+        */
+
+        foreach ($columns as $column => $fragments) {
+
+            foreach ($fragments as $type => $fragment) {
+                if (preg_match('/@param (.*?) (\$[a-z][a-zA-Z0-9_]+)$/m', $fragment, $matches)) {
+
+                    if (false === in_array($matches[1], array('string', 'integer', 'float'))) {
+                        $columns[$column][$type] = preg_replace('/\((\$[a-z][a-zA-Z0-9_]+)\)$/m', sprintf('(%s $1)', $matches[1]), $fragment);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * rendering everything
+     */
+
+    $code_cleaned = '';
+    
     if (true) foreach ($columns as $column => $fragments) {
         if (array_key_exists($type = 'property', $fragments)) {
-            echo $fragments[$type];
+            $code_cleaned.= $fragments[$type];
         }
     }
 
     if (array_key_exists($name = '__construct', $methods)) {
-        echo $methods[$name];
+        $code_cleaned.= $methods[$name];
     }
 
     if (true) foreach ($columns as $column => $fragments) {
       //foreach (array('get', 'set', 'add', 'remove') as $type) {
-        foreach (array('set', 'get', 'add', 'remove') as $type) {
+        foreach (array('set', 'add', 'remove', 'get') as $type) {
 
             if ($type === 'set' && $column === 'id') {
                 continue;
             }
 
             if (array_key_exists($type, $fragments)) {
-//print_r(array($column, $type));
-
-                echo $fragments[$type];
+                $code_cleaned.= $fragments[$type];
+            } else if ($type === 'set' || $type === 'get') {
+                throw new \Exception(sprintf('no "%s" for column "%s"', $type, $column));
             }
         }
     }
 
     if (false) foreach (array('setByName', 'getByName', 'fromArray', 'toArray', 'loadMetadata') as $name) {
         if (array_key_exists($name, $methods)) {
-            echo $methods[$name];
+            $code_cleaned.= $methods[$name];
         }
     }
 
-    $code = preg_replace('/^\{(.*?)^\}/sm', '{' . PHP_EOL . rtrim(ob_get_clean()) . PHP_EOL . '}', $code);
+    /**
+     * last clean up (fe: removed namespace declarations)
+     */
 
-    // removed namespace declarations
+    $code = preg_replace('/^\{(.*?)^\}/sm', '{' . PHP_EOL . rtrim($code_cleaned) . PHP_EOL . '}', $code);
+
     $code = preg_replace('/\\\\Base;.*?use Propel\\\\ActiveEntity;/s', ';', $code);
     $code = str_replace(' extends ActiveEntity', '', $code);
     
+    /**
+     * overwriting generated code by custom ones
+     */
+
     $path = $outputDirectory . DIRECTORY_SEPARATOR . $builder->getOutputName();
     file_put_contents($path, $code);
 }
