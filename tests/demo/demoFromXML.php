@@ -131,20 +131,25 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
      */
     if (true) {
 
-        /*
         if (preg_match('/namespace (.*?)\\\\Base;/', $code, $matches)) {
             $namespace = '\\' . $matches[1];
         }
-        var_dump($namespace);
-        */
+        //var_dump($namespace);
 
         foreach ($columns as $column => $fragments) {
 
             foreach ($fragments as $type => $fragment) {
                 if (preg_match('/@param (.*?) (\$[a-z][a-zA-Z0-9_]+)$/m', $fragment, $matches)) {
 
-                    if (false === in_array($matches[1], array('string', 'integer', 'float'))) {
-                        $columns[$column][$type] = preg_replace('/\((\$[a-z][a-zA-Z0-9_]+)\)$/m', sprintf('(%s $1)', $matches[1]), $fragment);
+                    $typeHint = $matches[1];
+
+                    // make typeHint relative to current namespace
+                    if (strpos($typeHint, $namespace) === 0) {
+                        $typeHint = substr($typeHint, strlen($namespace) + 1);
+                    }
+
+                    if (false === in_array($typeHint, array('string', 'integer', 'float'))) {
+                        $columns[$column][$type] = preg_replace('/\((\$[a-z][a-zA-Z0-9_]+)\)$/m', sprintf('(%s $1)', $typeHint), $fragment);
                     }
                 }
             }
