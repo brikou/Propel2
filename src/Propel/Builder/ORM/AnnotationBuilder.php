@@ -46,7 +46,7 @@ class AnnotationBuilder
         $sequenceGenerator = array(); // could be renamed to options to be consistent
 
         // we could add a loop here too
-        
+
         if (isset($this->metadata->sequenceGeneratorDefinition['sequenceName'])) {
             $sequenceGenerator[] = 'sequenceName="' . $this->metadata->sequenceGeneratorDefinition['sequenceName'] . '"';
         }
@@ -66,7 +66,7 @@ class AnnotationBuilder
     {
         $discrColumn = $this->metadata->discriminatorColumn;
         $discrColumnDetails = array();
-        
+
         // we could add a loop here too
 
         if (isset($discrColumn['name'])) {
@@ -134,7 +134,7 @@ class AnnotationBuilder
                 'merge',
                 'refresh',
             ) as $key) {
-                
+
                 if ($associationMapping[sprintf('isCascade%s', ucfirst($key))]) {
                     $cascades[] = sprintf('"%s"', $key);
                 }
@@ -185,16 +185,16 @@ class AnnotationBuilder
                 $joinColumnAnnot[] = sprintf('%s="%s"', $key, $joinColumn[$key]);
             }
         }
-        
+
         return 'JoinColumn(' . implode(', ', $joinColumnAnnot) . ')'; // sprintf
    }
 
    public function getJoinTableAnnotation($joinTable)
    {
         $joinTableAnnot = array();  // could be renamed to options to be consistent
-        
+
         // we could add a loop here too
-        
+
         $joinTableAnnot[] = 'name="' . $joinTable['name'] . '"';
 
         if (isset($joinTable['schema'])) {
