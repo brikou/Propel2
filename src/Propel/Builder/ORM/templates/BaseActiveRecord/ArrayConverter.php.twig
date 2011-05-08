@@ -20,11 +20,7 @@
      */
     public function toArray()
     {
-        return array(
-{% for fieldMapping in metadata.fieldMappings %}
-            '{{ fieldMapping.fieldName }}' => $this->get{{ fieldMapping.fieldName|ucfirst }}(),
-{% endfor %}
-        );
+        return {{ metadata.fieldMappings|metadataFieldMappingsToPhpToArray|stringify(12) }};
     }
 
 {% endblock %}

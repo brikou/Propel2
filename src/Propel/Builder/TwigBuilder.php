@@ -16,6 +16,7 @@ class TwigBuilder
         '\Propel\Util\ArrayType::stringify',
         '\Propel\Util\Inflector::singularize',
         '\Propel\Util\ORM::typeToPhp',
+        '\Propel\Builder\TwigBuilder::metadataFieldMappingsToPhpToArray',
     );
     protected $variables = array();
     protected $tempDir;
@@ -145,5 +146,21 @@ class TwigBuilder
             }
             $twig->addFilter($twigFilterName, new \Twig_Filter_Function($twigFilter));
         }
+    }
+
+    public static function metadataFieldMappingsToPhpToArray(array $fieldMappings)
+    {
+        $code = array();
+
+        // '{{ fieldMapping.fieldName }}' => $this->get{{ fieldMapping.fieldName|classify }}(),
+
+        foreach ($fieldMappings as $fieldMapping) {
+
+            $name = $fieldMapping['fieldName'];
+
+            $code[$name] = sprintf('``$this->get%s()``', \Doctrine\Common\Util\Inflector::classify($name));
+        }
+
+        return $code;
     }
 }

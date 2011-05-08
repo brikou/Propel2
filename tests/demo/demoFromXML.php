@@ -189,13 +189,11 @@ if (true) foreach ($generator->getBuilders() as $i => $builder) {
     }
 
     if (true) foreach (array(
-        /*
-        'setByName',
-        'getByName',
-        'fromArray',
+        //'setByName',
+        //'getByName',
+        //'fromArray',
         'toArray',
-        */
-        'loadMetadata',
+        //'loadMetadata',
     ) as $name) {
         if (array_key_exists($name, $methods)) {
             $code_cleaned.= $methods[$name];
